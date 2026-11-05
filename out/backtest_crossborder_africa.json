@@ -1,0 +1,288 @@
+{
+ "summary": {
+  "period": "2023-01-02 to 2026-10-19",
+  "countries": 26,
+  "onsets": 39,
+  "onsets_alerted": 19,
+  "sensitivity": 0.49,
+  "alert_episodes": 75,
+  "false_alarm_episodes": 56,
+  "ppv": 0.25,
+  "median_lead_days": 56
+ },
+ "onsets": [
+  {
+   "country": "TCD",
+   "onset": "2025-07-07",
+   "alerted": true,
+   "lead_days": 28,
+   "why": "NGA"
+  },
+  {
+   "country": "TCD",
+   "onset": "2026-06-08",
+   "alerted": true,
+   "lead_days": 70,
+   "why": "NGA, SDN"
+  },
+  {
+   "country": "SDN",
+   "onset": "2023-06-26",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "SDN",
+   "onset": "2026-05-11",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "SSD",
+   "onset": "2024-09-30",
+   "alerted": true,
+   "lead_days": 56,
+   "why": "KEN"
+  },
+  {
+   "country": "CAF",
+   "onset": "2026-04-27",
+   "alerted": true,
+   "lead_days": 70,
+   "why": "COG"
+  },
+  {
+   "country": "CMR",
+   "onset": "2024-11-04",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "CMR",
+   "onset": "2025-11-03",
+   "alerted": true,
+   "lead_days": 70,
+   "why": "TCD"
+  },
+  {
+   "country": "CMR",
+   "onset": "2026-06-01",
+   "alerted": true,
+   "lead_days": 63,
+   "why": "NGA"
+  },
+  {
+   "country": "NGA",
+   "onset": "2023-10-23",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "NER",
+   "onset": "2024-09-02",
+   "alerted": true,
+   "lead_days": 70,
+   "why": "NGA"
+  },
+  {
+   "country": "KEN",
+   "onset": "2025-02-10",
+   "alerted": true,
+   "lead_days": 70,
+   "why": "ETH, SSD, UGA"
+  },
+  {
+   "country": "KEN",
+   "onset": "2026-05-11",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "KEN",
+   "onset": "2026-09-14",
+   "alerted": true,
+   "lead_days": 28,
+   "why": "TZA"
+  },
+  {
+   "country": "UGA",
+   "onset": "2023-07-24",
+   "alerted": true,
+   "lead_days": 14,
+   "why": "TZA"
+  },
+  {
+   "country": "UGA",
+   "onset": "2024-01-29",
+   "alerted": true,
+   "lead_days": 56,
+   "why": "KEN, TZA"
+  },
+  {
+   "country": "UGA",
+   "onset": "2024-11-18",
+   "alerted": true,
+   "lead_days": 21,
+   "why": "SSD"
+  },
+  {
+   "country": "UGA",
+   "onset": "2025-07-07",
+   "alerted": true,
+   "lead_days": 42,
+   "why": "KEN, TZA"
+  },
+  {
+   "country": "TZA",
+   "onset": "2023-07-10",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "TZA",
+   "onset": "2023-10-02",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "TZA",
+   "onset": "2026-08-03",
+   "alerted": true,
+   "lead_days": 28,
+   "why": "MOZ, RWA"
+  },
+  {
+   "country": "ZMB",
+   "onset": "2024-12-23",
+   "alerted": true,
+   "lead_days": 49,
+   "why": "MOZ, ZWE"
+  },
+  {
+   "country": "ZMB",
+   "onset": "2025-08-04",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "ZMB",
+   "onset": "2026-06-29",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "MWI",
+   "onset": "2024-08-26",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "MWI",
+   "onset": "2025-12-01",
+   "alerted": true,
+   "lead_days": 70,
+   "why": "MOZ, TZA"
+  },
+  {
+   "country": "MOZ",
+   "onset": "2024-10-14",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "ZWE",
+   "onset": "2024-10-28",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "ZWE",
+   "onset": "2026-01-19",
+   "alerted": true,
+   "lead_days": 49,
+   "why": "MOZ"
+  },
+  {
+   "country": "AGO",
+   "onset": "2025-01-06",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "RWA",
+   "onset": "2025-03-17",
+   "alerted": true,
+   "lead_days": 70,
+   "why": "UGA"
+  },
+  {
+   "country": "COG",
+   "onset": "2023-07-24",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "COG",
+   "onset": "2025-06-16",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "COG",
+   "onset": "2026-02-02",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "GHA",
+   "onset": "2024-08-19",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "GHA",
+   "onset": "2025-07-28",
+   "alerted": true,
+   "lead_days": 28,
+   "why": "CIV"
+  },
+  {
+   "country": "TGO",
+   "onset": "2023-12-11",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "TGO",
+   "onset": "2024-07-22",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  },
+  {
+   "country": "TGO",
+   "onset": "2024-10-14",
+   "alerted": false,
+   "lead_days": null,
+   "why": ""
+  }
+ ]
+}

@@ -1,0 +1,252 @@
+[
+ {
+  "rule": "VIGILANCE seule (1 voisin)",
+  "sensitivity": 0.49,
+  "hits": 19,
+  "onsets": 39,
+  "alert_episodes": 75,
+  "ppv": 0.25,
+  "base_rate": 0.2,
+  "median_lead_days": 56
+ },
+ {
+  "rule": "ALERTE (2 voisins)",
+  "sensitivity": 0.1,
+  "hits": 4,
+  "onsets": 39,
+  "alert_episodes": 9,
+  "ppv": 0.44,
+  "base_rate": 0.2,
+  "median_lead_days": 28
+ },
+ {
+  "rule": "inondation (GDACS, 8 sem.) seul",
+  "sensitivity": 0.36,
+  "hits": 14,
+  "onsets": 39,
+  "alert_episodes": 50,
+  "ppv": 0.2,
+  "base_rate": 0.2,
+  "median_lead_days": 70
+ },
+ {
+  "rule": "VIGILANCE + inondation (GDACS, 8 sem.)",
+  "sensitivity": 0.21,
+  "hits": 8,
+  "onsets": 39,
+  "alert_episodes": 32,
+  "ppv": 0.28,
+  "base_rate": 0.2,
+  "median_lead_days": 59
+ },
+ {
+  "rule": "inondation grave (orange/rouge) seul",
+  "sensitivity": 0.0,
+  "hits": 0,
+  "onsets": 39,
+  "alert_episodes": 5,
+  "ppv": 0.2,
+  "base_rate": 0.2,
+  "median_lead_days": null
+ },
+ {
+  "rule": "VIGILANCE + inondation grave (orange/rouge)",
+  "sensitivity": 0.0,
+  "hits": 0,
+  "onsets": 39,
+  "alert_episodes": 2,
+  "ppv": 0.5,
+  "base_rate": 0.2,
+  "median_lead_days": null
+ },
+ {
+  "rule": "cyclone orange/rouge seul",
+  "sensitivity": 0.0,
+  "hits": 0,
+  "onsets": 39,
+  "alert_episodes": 0,
+  "ppv": null,
+  "base_rate": 0.2,
+  "median_lead_days": null
+ },
+ {
+  "rule": "VIGILANCE + cyclone orange/rouge",
+  "sensitivity": 0.0,
+  "hits": 0,
+  "onsets": 39,
+  "alert_episodes": 0,
+  "ppv": null,
+  "base_rate": 0.2,
+  "median_lead_days": null
+ },
+ {
+  "rule": "sécheresse active seul",
+  "sensitivity": 0.38,
+  "hits": 15,
+  "onsets": 39,
+  "alert_episodes": 28,
+  "ppv": 0.39,
+  "base_rate": 0.2,
+  "median_lead_days": 63
+ },
+ {
+  "rule": "VIGILANCE + sécheresse active",
+  "sensitivity": 0.18,
+  "hits": 7,
+  "onsets": 39,
+  "alert_episodes": 22,
+  "ppv": 0.36,
+  "base_rate": 0.2,
+  "median_lead_days": 42
+ },
+ {
+  "rule": "pic de conflits (z>=1) seul",
+  "sensitivity": 0.21,
+  "hits": 8,
+  "onsets": 39,
+  "alert_episodes": 30,
+  "ppv": 0.3,
+  "base_rate": 0.2,
+  "median_lead_days": 52
+ },
+ {
+  "rule": "VIGILANCE + pic de conflits (z>=1)",
+  "sensitivity": 0.05,
+  "hits": 2,
+  "onsets": 39,
+  "alert_episodes": 8,
+  "ppv": 0.38,
+  "base_rate": 0.2,
+  "median_lead_days": 14
+ },
+ {
+  "rule": "El Niño (ONI>=0.5) seul",
+  "sensitivity": 0.28,
+  "hits": 11,
+  "onsets": 39,
+  "alert_episodes": 30,
+  "ppv": 0.33,
+  "base_rate": 0.2,
+  "median_lead_days": 21
+ },
+ {
+  "rule": "VIGILANCE + El Niño (ONI>=0.5)",
+  "sensitivity": 0.13,
+  "hits": 5,
+  "onsets": 39,
+  "alert_episodes": 31,
+  "ppv": 0.19,
+  "base_rate": 0.2,
+  "median_lead_days": 28
+ },
+ {
+  "rule": "El Niño fort (ONI>=1) seul",
+  "sensitivity": 0.13,
+  "hits": 5,
+  "onsets": 39,
+  "alert_episodes": 24,
+  "ppv": 0.17,
+  "base_rate": 0.2,
+  "median_lead_days": 28
+ },
+ {
+  "rule": "VIGILANCE + El Niño fort (ONI>=1)",
+  "sensitivity": 0.08,
+  "hits": 3,
+  "onsets": 39,
+  "alert_episodes": 24,
+  "ppv": 0.12,
+  "base_rate": 0.2,
+  "median_lead_days": 28
+ },
+ {
+  "rule": "VIGILANCE + un amplificateur grave (inondation/cyclone grave, pic de conflits, El Niño fort)",
+  "sensitivity": 0.13,
+  "hits": 5,
+  "onsets": 39,
+  "alert_episodes": 34,
+  "ppv": 0.21,
+  "base_rate": 0.2,
+  "median_lead_days": 28
+ },
+ {
+  "rule": "El Niño, Afrique de l'Est seulement",
+  "sensitivity": 0.15,
+  "hits": 6,
+  "onsets": 39,
+  "alert_episodes": 11,
+  "ppv": 0.45,
+  "base_rate": 0.2,
+  "median_lead_days": 24
+ },
+ {
+  "rule": "Score >= 2 signaux (voisin, sécheresse, conflits, El Niño Est)",
+  "sensitivity": 0.26,
+  "hits": 10,
+  "onsets": 39,
+  "alert_episodes": 40,
+  "ppv": 0.3,
+  "base_rate": 0.2,
+  "median_lead_days": 35
+ },
+ {
+  "rule": "Score >= 1 signal",
+  "sensitivity": 0.79,
+  "hits": 31,
+  "onsets": 39,
+  "alert_episodes": 82,
+  "ppv": 0.23,
+  "base_rate": 0.2,
+  "median_lead_days": 70
+ },
+ {
+  "rule": "VIGILANCE ou sécheresse",
+  "sensitivity": 0.67,
+  "hits": 26,
+  "onsets": 39,
+  "alert_episodes": 75,
+  "ppv": 0.25,
+  "base_rate": 0.2,
+  "median_lead_days": 70
+ },
+ {
+  "rule": "insécurité alimentaire IPC 3+ >= 20 % seule",
+  "sensitivity": 0.36,
+  "hits": 14,
+  "onsets": 39,
+  "alert_episodes": 18,
+  "ppv": 0.22,
+  "base_rate": 0.2,
+  "median_lead_days": 70
+ },
+ {
+  "rule": "Score >= 1 avec IPC",
+  "sensitivity": 0.85,
+  "hits": 33,
+  "onsets": 39,
+  "alert_episodes": 70,
+  "ppv": 0.24,
+  "base_rate": 0.2,
+  "median_lead_days": 70
+ },
+ {
+  "rule": "Score >= 2 avec IPC",
+  "sensitivity": 0.41,
+  "hits": 16,
+  "onsets": 39,
+  "alert_episodes": 51,
+  "ppv": 0.25,
+  "base_rate": 0.2,
+  "median_lead_days": 59
+ },
+ {
+  "rule": "Score >= 2 sans IPC",
+  "sensitivity": 0.26,
+  "hits": 10,
+  "onsets": 39,
+  "alert_episodes": 40,
+  "ppv": 0.3,
+  "base_rate": 0.2,
+  "median_lead_days": 35
+ }
+]

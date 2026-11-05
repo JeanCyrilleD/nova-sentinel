@@ -1,0 +1,322 @@
+<title>Nova Sentinel</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: operations-room console. Header strip, map + country brief side by side, timeline under the map, evidence tabs below. Single dark look by design. */
+:root{
+  --bg:#071421; --panel:#0c1d2e; --panel2:#10263b; --line:#1b3550; --fg:#e4ecf3; --mute:#8aa0b5; --dim:#5b7389;
+  --teal:#2dd4bf; --warn:#ef4444; --watch:#f5a524; --active:#8b7cf6; --quiet:#173450; --off:#0e2236;
+  --display:"Archivo",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--body);font-size:15px;line-height:1.45;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:18px 40px}
+.wrap{max-width:1360px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:16px 24px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand img{width:46px;height:45px}
+.brand h1{font-family:var(--display);font-weight:800;font-size:26px;letter-spacing:.5px;margin:0;text-wrap:balance}
+.brand p{margin:0;color:var(--mute);font-size:13px}
+.week{margin-left:auto;display:flex;align-items:baseline;gap:10px;font-family:var(--mono)}
+.week b{font-size:24px;font-weight:600;font-variant-numeric:tabular-nums}
+.week span{color:var(--mute);font-size:12px;text-transform:uppercase;letter-spacing:1.2px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:16px}
+@media (max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;min-width:0}
+.mapcard{padding:8px 8px 12px;position:relative}
+#map{width:100%;height:auto;display:block}
+#map path.c{stroke:#06111c;stroke-width:.6;transition:fill .45s ease;cursor:pointer}
+#map path.c.sel{stroke:var(--fg);stroke-width:2}
+#map path.c:focus-visible{outline:none;stroke:var(--teal);stroke-width:2.5}
+#map .pulse{fill:none;stroke:var(--warn);stroke-width:2;animation:pulse 1.6s ease-out infinite;pointer-events:none}
+@keyframes pulse{from{r:4;opacity:.95}to{r:26;opacity:0}}
+#map .flow{fill:none;stroke-width:2;stroke-linecap:round;stroke-dasharray:6 7;animation:flow 1s linear infinite;pointer-events:none;opacity:.9}
+@keyframes flow{to{stroke-dashoffset:-13}}
+#map .burst{fill:none;stroke:var(--fg);stroke-width:2.5;pointer-events:none;animation:burst 1.4s ease-out forwards}
+@keyframes burst{from{r:3;opacity:1}to{r:34;opacity:0}}
+#map text.lbl{font-family:var(--mono);font-size:9px;fill:#cfe0ee;pointer-events:none;text-anchor:middle;paint-order:stroke;stroke:#06111c;stroke-width:2.5px}
+.legend{position:absolute;left:16px;bottom:18px;display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--mute);background:rgba(7,20,33,.82);padding:8px 10px;border-radius:10px;border:1px solid var(--line)}
+.legend div{display:flex;align-items:center;gap:7px}
+.tl{display:flex;flex-direction:column;gap:8px;margin-top:6px;padding:0 8px}
+.ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+button,select{font-family:var(--body);font-size:13px;background:var(--panel2);color:var(--fg);border:1px solid var(--line);border-radius:9px;padding:7px 12px;cursor:pointer}
+button:hover,select:hover{border-color:var(--teal)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+button.primary{background:var(--teal);color:#04201c;border-color:var(--teal);font-weight:600;min-width:92px}
+.story{border-color:#2a5a6e}
+#slider{width:100%;accent-color:var(--teal)}
+#strip{width:100%;height:46px;display:block}
+.brief h2{font-family:var(--display);font-size:24px;margin:0;text-wrap:balance}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:1px;color:#081521}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.sec{margin-top:14px}
+.sec h3{margin:0 0 6px;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mute);font-weight:600}
+.sig{display:flex;flex-wrap:wrap;gap:6px}
+.sig span{padding:4px 9px;border-radius:8px;font-size:13px;border:1px solid var(--line);background:var(--panel2)}
+.sig span.on{border-color:var(--watch);color:#ffd9a0}
+.sig span.ctx{border-style:dashed;color:var(--mute)}
+.next{padding:10px 12px;border-radius:10px;background:var(--panel2);border:1px solid var(--line);font-size:14px}
+.next.hit{border-color:var(--warn)}
+.next.ok{border-color:#1f6d60}
+#spark{width:100%;height:110px;display:block}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tabs button[aria-selected="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar{display:grid;grid-template-columns:minmax(150px,260px) minmax(0,1fr) 70px;gap:10px;align-items:center;font-size:13.5px}
+@media (max-width:640px){.bar{grid-template-columns:minmax(0,1fr) 64px}.bar .track{grid-column:1/-1;order:3}}
+.track{position:relative;height:22px;background:var(--off);border-radius:6px;overflow:hidden}
+.track i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;transition:width .8s ease}
+.track .chance{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--fg);opacity:.6}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.note{color:var(--mute);font-size:13px;max-width:75ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.cols p{margin:4px 0 0;color:var(--mute);font-size:14px}
+.cols b{font-family:var(--display);font-size:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpis div{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.kpis b{display:block;font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums}
+.kpis span{color:var(--mute);font-size:12.5px}
+@media (prefers-reduced-motion:reduce){#map .pulse,#map .flow,#map .burst{animation:none}#map path.c{transition:none}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="brand"><img alt="" src="data:image/png;base64,__LOGO__"><div><h1>NOVA SENTINEL</h1><p>Explainable cholera early warning from cross-border, climate and crisis signals · 26 African countries</p></div></div>
+  <div class="week"><span>week of</span><b id="wk">—</b></div>
+</header>
+<div class="chips" id="counts"></div>
+
+<div class="grid">
+  <div class="card mapcard">
+    <svg id="map" viewBox="0 0 800 820" role="img" aria-label="Map of Africa coloured by alert level for the selected week"></svg>
+    <div class="legend">
+      <div><span class="dot" style="background:var(--warn)"></span>WARNING · 2+ signals</div>
+      <div><span class="dot" style="background:var(--watch)"></span>WATCH · 1 signal</div>
+      <div><span class="dot" style="background:var(--active)"></span>Outbreak ongoing</div>
+      <div><span class="dot" style="background:var(--quiet)"></span>Monitored, quiet</div>
+    </div>
+    <div class="tl">
+      <div class="ctrl">
+        <button class="primary" id="play" aria-label="Play the weekly replay">▶ Play</button>
+        <button id="back" aria-label="Previous week">◀</button>
+        <button id="fwd" aria-label="Next week">▶</button>
+        <select id="speed" aria-label="Replay speed"><option value="700">1×</option><option value="350" selected>2×</option><option value="150">4×</option></select>
+        <button class="story" id="storyChad">Replay: Chad 2026</button>
+        <button class="story" id="storyKen">Replay: Kenya 2025</button>
+        <button id="today">Latest week</button>
+      </div>
+      <input type="range" id="slider" min="0" max="1" value="1" aria-label="Week">
+      <svg id="strip" viewBox="0 0 1000 46" preserveAspectRatio="none" aria-label="Alerts per week (bars) and outbreak onsets (white ticks)"></svg>
+      <div class="note">Bars: countries on WARNING (red) or WATCH (amber) each week. White ticks: a new outbreak began in a quiet country. Space plays or pauses; arrow keys step.</div>
+    </div>
+  </div>
+
+  <div class="card brief" id="brief" aria-live="polite"></div>
+</div>
+
+<div class="card">
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-t="rel" id="t-rel">How reliable is it?</button>
+    <button role="tab" aria-selected="false" data-t="how" id="t-how">How it works</button>
+    <button role="tab" aria-selected="false" data-t="safe" id="t-safe">Safeguards and limits</button>
+  </div>
+  <div id="p-rel"></div>
+  <div id="p-how" hidden>
+    <div class="cols">
+      <div><b>1 · Ingest public data</b><p>WHO weekly cholera cases and outbreak news, GDACS droughts and floods, NOAA El Niño index, HDX conflict, displacement and food-security aggregates.</p></div>
+      <div><b>2 · Detect surges</b><p>A country surges when its last 2 weeks hold at least 50 cases and three times its previous 6-week average.</p></div>
+      <div><b>3 · Score quiet countries</b><p>Signals: a neighbour surging, an active drought, a conflict spike, El Niño (East Africa). One signal sets WATCH, two or more set WARNING.</p></div>
+      <div><b>4 · Explain and propose</b><p>Each alert names its evidence, a proportionate preventive action and the role that acts. A mandated officer decides.</p></div>
+    </div>
+  </div>
+  <div id="p-safe" hidden>
+    <div class="cols">
+      <div><b>Public, aggregated data</b><p>Country-level counts only. No personal or individual health data is collected or shown.</p></div>
+      <div><b>Human in the loop</b><p>The system prepares a brief; it never sends public messages or triggers action on its own.</p></div>
+      <div><b>Uncertainty on screen</b><p>Every rule shows how often it was right against chance, to limit alert fatigue.</p></div>
+      <div><b>Known limits</b><p>National resolution only, uneven reporting between countries, 39 onsets of history: some apparent gains may be luck. Floods and food insecurity are shown as context because they did no better than chance as triggers.</p></div>
+    </div>
+  </div>
+</div>
+<p class="note">Data: WHO Global Cholera &amp; AWD dashboard, WHO Disease Outbreak News, GDACS, NOAA ONI, HDX HAPI, Open-Meteo ERA5 · Back-test January 2023 – October 2026 · Generated <span id="gen"></span> · Human decides, machine prepares.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+const D = __DATA__;
+const GEO = __GEO__;
+const LV = {warning:"var(--warn)", watch:"var(--watch)", active:"var(--active)", none:"var(--quiet)"};
+const LVC = {warning:"#ef4444", watch:"#f5a524", active:"#8b7cf6", none:"#2b5b80"};
+const LVN = {warning:"WARNING", watch:"WATCH", active:"OUTBREAK ONGOING", none:"QUIET"};
+const W = D.weeks, N = W.length, NM = D.countries, MON = new Set(D.monitored);
+// a country with any reported case in the last 4 weeks is in outbreak response, not early warning
+for (const k of D.monitored) for (let i = 0; i < N; i++) { let s = 0; for (let j = Math.max(0, i-3); j <= i; j++) s += (W[j].c[k] ? W[j].c[k].n : 0); if (s > 0 && W[i].c[k]) W[i].c[k].l = "active"; }
+const ACT = {
+  warning:"Step up surveillance of acute watery diarrhoea at border points, camps and disaster-hit areas; check stocks of oral rehydration salts, rapid tests and WASH kits; have a reactive vaccination plan ready.",
+  watch:"Remind border health facilities of the cholera case definition and check stocks of oral rehydration salts and rapid tests.",
+  active:"Outbreak response is under way: early warning has nothing to add. Neighbours of this country are watched instead.",
+  none:"No preventive action needed this week."
+};
+let wi = N - 1, sel = "TCD", timer = null, stopAt = null;
+
+const svg = d3.select("#map");
+const proj = d3.geoMercator().fitExtent([[10,10],[790,810]], GEO);
+const path = d3.geoPath(proj);
+const cent = {};
+GEO.features.forEach(f => { const iso = f.properties.iso; if (!cent[iso] || iso === "SOM") cent[iso] = cent[iso] || path.centroid(f); });
+// nicer anchor points for a few shapes
+const fix = {COD:[-1.5,23.5], SOM:[4.5,45.5], MOZ:[-17,36], TZA:[-6.5,35], SDN:[14.5,30], NER:[16.5,9.5], TCD:[14,19], ZMB:[-14,27.5], NGA:[9.5,8.2], ETH:[8.5,39.5]};
+for (const k in fix) cent[k] = proj([fix[k][1], fix[k][0]]);
+const gC = svg.append("g"), gF = svg.append("g"), gP = svg.append("g"), gL = svg.append("g");
+gC.selectAll("path").data(GEO.features).join("path")
+  .attr("class","c").attr("d", path)
+  .attr("tabindex", d => MON.has(d.properties.iso) ? 0 : null)
+  .attr("aria-label", d => NM[d.properties.iso] || d.properties.iso)
+  .on("click", (e,d) => { if (MON.has(d.properties.iso) || NM[d.properties.iso]) { sel = d.properties.iso; render(false); } })
+  .on("keydown", (e,d) => { if (e.key === "Enter") { sel = d.properties.iso; render(false); } });
+gL.selectAll("text").data(D.monitored).join("text").attr("class","lbl")
+  .attr("x", d => cent[d] ? cent[d][0] : -99).attr("y", d => cent[d] ? cent[d][1] + 3 : -99).text(d => d);
+
+function curve(a, b){ const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2, dx=b[0]-a[0], dy=b[1]-a[1]; return `M${a[0]},${a[1]} Q${mx-dy*.25},${my+dx*.25} ${b[0]},${b[1]}`; }
+const fmt = s => d3.timeFormat("%d %b %Y")(new Date(s));
+const daysBetween = (a,b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+
+function counts(i){ const c = {warning:0, watch:0, active:0}; for (const k of D.monitored){ const l = W[i].c[k] && W[i].c[k].l; if (c[l] !== undefined) c[l]++; } return c; }
+
+function render(anim = true){
+  const wk = W[wi];
+  d3.select("#wk").text(fmt(wk.w));
+  d3.select("#slider").property("value", wi);
+  const c = counts(wi);
+  const oni = wk.oni;
+  d3.select("#counts").html(
+    `<span class="chip"><span class="dot" style="background:var(--warn)"></span>${c.warning} on WARNING</span>`+
+    `<span class="chip"><span class="dot" style="background:var(--watch)"></span>${c.watch} on WATCH</span>`+
+    `<span class="chip"><span class="dot" style="background:var(--active)"></span>${c.active} outbreaks ongoing</span>`+
+    `<span class="chip" title="NOAA Oceanic Niño Index, previous month">El Niño index ${oni>=0?"+":""}${oni.toFixed(2)}${oni>=1?" · strong El Niño":oni>=.5?" · El Niño":oni<=-.5?" · La Niña":" · neutral"}</span>`);
+  gC.selectAll("path.c")
+    .classed("sel", d => d.properties.iso === sel)
+    .attr("fill", d => { const r = wk.c[d.properties.iso]; if (!MON.has(d.properties.iso)) return r && r.n > 0 ? "#2a2550" : "var(--off)"; return LV[(r && r.l) || "none"]; });
+  // flows from surging neighbours
+  const flows = [];
+  for (const k of D.monitored){ const r = wk.c[k]; if (!r || !r.s || (r.l !== "watch" && r.l !== "warning")) continue; for (const n of r.s.nb) if (cent[n] && cent[k]) flows.push({a:n, b:k, l:r.l}); }
+  gF.selectAll("path").data(flows, d => d.a+d.b).join("path").attr("class","flow")
+    .attr("d", d => curve(cent[d.a], cent[d.b])).attr("stroke", d => LVC[d.l]);
+  const warns = D.monitored.filter(k => wk.c[k] && wk.c[k].l === "warning" && cent[k]);
+  gP.selectAll("circle.pulse").data(warns, d => d).join("circle").attr("class","pulse").attr("cx", d => cent[d][0]).attr("cy", d => cent[d][1]);
+  if (anim){
+    const ons = D.monitored.filter(k => (D.onsets[k] || []).includes(wk.w) && cent[k]);
+    ons.forEach(k => gP.append("circle").attr("class","burst").attr("cx", cent[k][0]).attr("cy", cent[k][1]).on("animationend", function(){ this.remove(); }));
+  }
+  brief();
+}
+
+function brief(){
+  const wk = W[wi], r = wk.c[sel] || {n:0}, nm = NM[sel] || sel, l = r.l || "none";
+  const s = r.s || {nb:[], dr:false, cf:false, en:false, fl:false};
+  const chips = [];
+  if (s.nb.length) chips.push(`<span class="on">Neighbour surging: ${s.nb.map(n => NM[n] || n).join(", ")}</span>`);
+  if (s.dr) chips.push(`<span class="on">Active drought (GDACS)</span>`);
+  if (s.cf) chips.push(`<span class="on">Conflict spike (HDX)</span>`);
+  if (s.en) chips.push(`<span class="on">El Niño, East Africa</span>`);
+  if (s.fl) chips.push(`<span class="ctx">Recent flood (context only)</span>`);
+  if (!chips.length) chips.push(`<span class="ctx">No signal this week</span>`);
+  let why = "";
+  if (l === "active") why = `${r.n} cases reported this week. The outbreak is already under way.`;
+  else if (l === "none") why = MON.has(sel) ? "No neighbour surging and no climate or crisis amplifier active." : "This country is not in the monitored set; its cases feed its neighbours' alerts.";
+  else {
+    const parts = [];
+    if (s.nb.length) parts.push(`cholera is surging in ${s.nb.map(n => `${NM[n]||n} (${W.slice(Math.max(0,wi-3), wi+1).reduce((s,w) => s + (w.c[n] ? w.c[n].n : 0), 0)} cases in the last 4 weeks)`).join(" and ")}`);
+    if (s.dr) parts.push("an active drought concentrates people around fewer, less safe water points");
+    if (s.cf) parts.push("conflict events rose sharply last month");
+    if (s.en) parts.push("a strong El Niño raises the risk of extreme rains in East Africa");
+    why = `${nm} has reported no cases for at least 8 weeks, but ${parts.join("; ")}.`;
+  }
+  // what happened next (replay truth)
+  let next = "", cls = "";
+  const on = (D.onsets[sel] || []).find(o => { const d = daysBetween(wk.w, o); return d > 0 && d <= 70; });
+  if (l === "active") { next = "Outbreak ongoing."; }
+  else if (on) { next = `<b>What happened next:</b> an outbreak began on ${fmt(on)}, ${daysBetween(wk.w, on)} days later.`; cls = "hit"; }
+  else if (daysBetween(wk.w, W[N-1].w) >= 70) { next = "<b>What happened next:</b> no new outbreak in the following 10 weeks."; cls = "ok"; }
+  else { next = "<b>What happens next:</b> too recent to know. This is a live alert."; }
+  const pill = `<span class="pill" style="background:${LVC[l]}">${LVN[l]}</span>`;
+  d3.select("#brief").html(`
+    <div class="row">${pill}<span class="note">${fmt(wk.w)}</span></div>
+    <h2 style="margin-top:8px">${nm}</h2>
+    <div class="sec"><h3>Signals this week</h3><div class="sig">${chips.join("")}</div></div>
+    <div class="sec"><h3>Why</h3><div>${why}</div></div>
+    ${MON.has(sel) ? `<div class="sec"><h3>Proportionate action</h3><div>${ACT[l]}</div></div>
+    <div class="sec"><h3>Who acts</h3><div>National epidemiological surveillance (ministry of health), with the WASH cluster. A mandated officer decides.</div></div>` : ""}
+    <div class="sec"><div class="next ${cls}">${next}</div></div>
+    <div class="sec"><h3>Weekly cholera cases, ${nm} · shaded weeks were on alert</h3><svg id="spark" viewBox="0 0 600 110" preserveAspectRatio="none"></svg></div>`);
+  spark();
+}
+
+function spark(){
+  const g = d3.select("#spark"), wv = 600, hv = 110, pad = 14;
+  const v = W.map(w => (w.c[sel] ? w.c[sel].n : 0));
+  const mx = d3.max(v) || 1;
+  const x = d3.scaleLinear([0, N-1], [4, wv-4]), y = d3.scaleLinear([0, mx], [hv-pad, 8]);
+  W.forEach((w, i) => { const l = w.c[sel] && w.c[sel].l; if (l === "watch" || l === "warning") g.append("rect").attr("x", x(i)-1.6).attr("y", 0).attr("width", 3.2).attr("height", hv-pad).attr("fill", LVC[l]).attr("opacity", .22); });
+  g.append("path").attr("d", d3.area().x((d,i) => x(i)).y0(hv-pad).y1(d => y(d))(v)).attr("fill", "#2dd4bf").attr("opacity", .18);
+  g.append("path").attr("d", d3.line().x((d,i) => x(i)).y(d => y(d))(v)).attr("fill", "none").attr("stroke", "#2dd4bf").attr("stroke-width", 1.6);
+  (D.onsets[sel] || []).forEach(o => { const i = W.findIndex(w => w.w === o); if (i >= 0) g.append("line").attr("x1", x(i)).attr("x2", x(i)).attr("y1", 0).attr("y2", hv-pad).attr("stroke", "#e4ecf3").attr("stroke-width", 1.2).attr("stroke-dasharray", "3 3"); });
+  g.append("line").attr("x1", x(wi)).attr("x2", x(wi)).attr("y1", 0).attr("y2", hv).attr("stroke", "#f5a524").attr("stroke-width", 2);
+  g.append("text").attr("x", 6).attr("y", 12).attr("fill", "#8aa0b5").attr("font-size", 11).attr("font-family", "IBM Plex Mono, monospace").text(`max ${d3.format(",")(mx)}/week`);
+  const yrs = [...new Set(W.map(w => w.w.slice(0,4)))];
+  yrs.forEach(yr => { const i = W.findIndex(w => w.w.startsWith(yr)); g.append("text").attr("x", x(i)+3).attr("y", hv-2).attr("fill", "#5b7389").attr("font-size", 10).attr("font-family", "IBM Plex Mono, monospace").text(yr); });
+}
+
+function strip(){
+  const g = d3.select("#strip"), x = d3.scaleLinear([0, N-1], [2, 998]);
+  const c = W.map((w, i) => counts(i));
+  const mx = d3.max(c, d => d.warning + d.watch) || 1, y = d3.scaleLinear([0, mx], [0, 38]);
+  c.forEach((d, i) => {
+    g.append("rect").attr("x", x(i)-2).attr("width", 4).attr("y", 44 - y(d.watch + d.warning)).attr("height", y(d.watch)).attr("fill", "#f5a524").attr("opacity", .8);
+    g.append("rect").attr("x", x(i)-2).attr("width", 4).attr("y", 44 - y(d.warning)).attr("height", y(d.warning)).attr("fill", "#ef4444");
+  });
+  for (const k in D.onsets) for (const o of D.onsets[k]) { const i = W.findIndex(w => w.w === o); if (i >= 0) g.append("rect").attr("x", x(i)-.8).attr("width", 1.6).attr("y", 0).attr("height", 8).attr("fill", "#e4ecf3"); }
+  g.append("rect").attr("id", "cur").attr("width", 3).attr("y", 0).attr("height", 46).attr("fill", "#2dd4bf");
+}
+function moveCur(){ d3.select("#cur").attr("x", d3.scaleLinear([0, N-1], [2, 998])(wi) - 1.5); }
+
+function reliability(){
+  const pick = ["Score >= 1 signal", "ALERTE (2 voisins)", "sécheresse active seul", "El Niño, Afrique de l'Est seulement", "pic de conflits (z>=1) seul", "VIGILANCE seule (1 voisin)", "inondation (GDACS, 8 sem.) seul", "insécurité alimentaire IPC 3+ >= 20 % seule"];
+  const label = {"Score >= 1 signal":"WATCH · any one signal", "ALERTE (2 voisins)":"WARNING · 2+ neighbours surging", "sécheresse active seul":"Active drought", "El Niño, Afrique de l'Est seulement":"El Niño · East Africa", "pic de conflits (z>=1) seul":"Conflict spike", "VIGILANCE seule (1 voisin)":"Neighbour surging (1)", "inondation (GDACS, 8 sem.) seul":"Floods (context only)", "insécurité alimentaire IPC 3+ >= 20 % seule":"Food insecurity (context only)"};
+  const rows = pick.map(k => D.metrics.find(m => m.rule === k)).filter(Boolean);
+  const base = rows[0] ? rows[0].base_rate : .2;
+  const w = rows.find(r => r.rule === "Score >= 1 signal"), a = rows.find(r => r.rule === "ALERTE (2 voisins)");
+  let h = `<div class="kpis"><div><b>39</b><span>outbreak onsets replayed, 2023–2026</span></div>
+    <div><b>${w ? Math.round(w.sensitivity*100) : "–"} %</b><span>preceded by a WATCH</span></div>
+    <div><b>${w ? w.median_lead_days : "–"} days</b><span>median warning time</span></div>
+    <div><b>${a ? Math.round(a.ppv*100) : "–"} %</b><span>of WARNINGs followed by an outbreak (chance: ${Math.round(base*100)} %)</span></div></div>
+    <div class="note" style="margin-bottom:10px">Bar = share of alerts followed by an outbreak within 10 weeks. White line = chance level. Right: share of outbreaks caught · median lead time.</div><div class="bars">`;
+  rows.forEach(r => { const p = r.ppv || 0; const good = p >= .3;
+    h += `<div class="bar"><span>${label[r.rule]}</span><div class="track"><i style="width:0;background:${good ? "#2dd4bf" : "#4a6178"}" data-w="${p*100}"></i><span class="chance" style="left:${base*100}%"></span></div><span class="num">${Math.round(r.sensitivity*100)}% · ${r.median_lead_days || "–"}d</span></div>`; });
+  h += `</div><p class="note" style="margin-top:12px">Teal: kept as a trigger (clearly above chance). Grey: shown as context only. Rainfall alone, rain plus conflict, and floods did no better than chance, and are reported as such.</p>`;
+  d3.select("#p-rel").html(h);
+  requestAnimationFrame(() => d3.selectAll(".track i").style("width", function(){ return this.dataset.w + "%"; }));
+}
+
+function play(){ if (timer) { stop(); return; } d3.select("#play").text("❚❚ Pause"); timer = d3.interval(() => { if (wi >= N-1 || (stopAt !== null && wi >= stopAt)) { stop(); stopAt = null; return; } wi++; render(); moveCur(); }, +d3.select("#speed").property("value")); }
+function stop(){ if (timer) timer.stop(); timer = null; d3.select("#play").text("▶ Play"); }
+function go(i){ wi = Math.max(0, Math.min(N-1, i)); render(); moveCur(); }
+function story(iso, start, end){ stop(); sel = iso; go(W.findIndex(w => w.w >= start)); stopAt = W.findIndex(w => w.w >= end); play(); }
+
+d3.select("#slider").attr("max", N-1).on("input", function(){ stop(); go(+this.value); });
+d3.select("#play").on("click", play);
+d3.select("#back").on("click", () => { stop(); go(wi-1); });
+d3.select("#fwd").on("click", () => { stop(); go(wi+1); });
+d3.select("#today").on("click", () => { stop(); go(N-1); });
+d3.select("#speed").on("change", () => { if (timer) { stop(); play(); } });
+d3.select("#storyChad").on("click", () => story("TCD", "2026-04-06", "2026-06-08"));
+d3.select("#storyKen").on("click", () => story("KEN", "2024-11-25", "2025-02-10"));
+d3.selectAll(".tabs button").on("click", function(){ d3.selectAll(".tabs button").attr("aria-selected", "false"); this.setAttribute("aria-selected", "true"); for (const t of ["rel","how","safe"]) document.getElementById("p-"+t).hidden = t !== this.dataset.t; });
+document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return; if (e.code === "Space") { e.preventDefault(); play(); } if (e.key === "ArrowLeft") { stop(); go(wi-1); } if (e.key === "ArrowRight") { stop(); go(wi+1); } });
+d3.select("#gen").text(D.generated);
+strip(); reliability(); render(false); moveCur();
+</script>

@@ -1,0 +1,13 @@
+{
+ "chad_onset_week": "2026-06-08",
+ "neighbour_first_surge": {
+  "SDN": "2026-05-11",
+  "CAF": "2026-06-08",
+  "CMR": "2026-06-22",
+  "NGA": "2026-03-30"
+ },
+ "first_cross_border_alert": "2026-03-30",
+ "lead_time_days": 70,
+ "explanation": "NGA surge 2026-03-30; SDN surge 2026-05-11",
+ "caveat": "single event (2026); WHO weekly series available from 2026 only in this feed; false-alarm rate not estimable yet"
+}

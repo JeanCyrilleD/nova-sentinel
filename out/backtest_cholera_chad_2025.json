@@ -1,0 +1,16 @@
+{
+ "onset": "2025-07-13",
+ "first_alert_2025": null,
+ "lead_time_days": null,
+ "explanation_at_first_alert": null,
+ "rain_only_first_alert": null,
+ "seasons_with_alert_2015_2024": [
+  2017,
+  2018,
+  2019,
+  2022,
+  2024
+ ],
+ "threshold": 1.0,
+ "assumption": "2015-2024 seasons treated as non-outbreak for Ouaddai; to verify with WHO AFRO bulletins"
+}

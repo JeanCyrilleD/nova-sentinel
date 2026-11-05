@@ -1,0 +1,32 @@
+[
+ {
+  "signal": "voisin en poussée",
+  "sensitivity": 0.49,
+  "alert_episodes": 75,
+  "ppv": 0.25,
+  "base_rate": 0.2,
+  "median_lead_days": 56,
+  "onsets": 39,
+  "hits": 19
+ },
+ {
+  "signal": "voisin en poussée + saison humide",
+  "sensitivity": 0.38,
+  "alert_episodes": 57,
+  "ppv": 0.25,
+  "base_rate": 0.2,
+  "median_lead_days": 49,
+  "onsets": 39,
+  "hits": 15
+ },
+ {
+  "signal": "≥2 voisins en poussée",
+  "sensitivity": 0.1,
+  "alert_episodes": 9,
+  "ppv": 0.44,
+  "base_rate": 0.2,
+  "median_lead_days": 28,
+  "onsets": 39,
+  "hits": 4
+ }
+]
