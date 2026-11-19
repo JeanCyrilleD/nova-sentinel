@@ -1,4 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Nova Sentinel</title>
+<meta name="description" content="Explainable cholera early warning for 26 African countries: which signals fired, how confident the alert is, and a human officer who decides.">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
@@ -80,8 +86,40 @@ button.primary{background:var(--teal);color:#04201c;border-color:var(--teal);fon
 .kpis div{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .kpis b{display:block;font-family:var(--display);font-size:26px;font-variant-numeric:tabular-nums}
 .kpis span{color:var(--mute);font-size:12.5px}
+/* 19/11 — data freshness, confidence, evidence, officer decision, signal matrix, decision log */
+.fresh{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;font-size:13px;color:var(--mute);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 14px}
+.fresh b{color:var(--fg);font-weight:600}
+.fresh.late{border-color:var(--watch)}
+.fresh .flag{color:#ffd9a0;font-weight:600}
+.conf{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.meter{display:inline-flex;gap:3px}
+.meter i{width:18px;height:8px;border-radius:3px;background:var(--off)}
+.meter i.on{background:var(--teal)}
+.dq{padding:8px 11px;border-radius:10px;border:1px dashed var(--watch);color:#ffd9a0;font-size:13.5px}
+.dq.ok{border-color:#1f6d60;color:var(--mute);border-style:solid}
+table.ev{width:100%;border-collapse:collapse;font-size:13px}
+table.ev th{text-align:left;color:var(--mute);font-weight:600;font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;padding:4px 6px;border-bottom:1px solid var(--line)}
+table.ev td{padding:5px 6px;border-bottom:1px solid #132b42;vertical-align:top}
+table.ev td.n{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+.decide{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-radius:12px;background:var(--panel2);border:1px solid var(--line)}
+.decide .btns{display:flex;flex-wrap:wrap;gap:8px}
+.decide button.acc{border-color:#1f6d60}.decide button.acc[aria-pressed="true"]{background:#1f6d60;color:#eafff9}
+.decide button.dis{border-color:#5b2a2a}.decide button.dis[aria-pressed="true"]{background:#7a2a2a;color:#ffecec}
+.decide textarea,.decide input{font-family:var(--body);font-size:13.5px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%;box-sizing:border-box}
+.decide textarea{min-height:56px;resize:vertical}
+.decide .hist{font-size:12.5px;color:var(--mute);display:flex;flex-direction:column;gap:3px}
+.mx{width:100%;border-collapse:collapse;font-size:13px}
+.mx th{position:sticky;top:0;background:var(--panel);text-align:left;color:var(--mute);font-weight:600;font-size:11.5px;letter-spacing:.5px;padding:6px;border-bottom:1px solid var(--line);white-space:nowrap}
+.mx td{padding:6px;border-bottom:1px solid #132b42;white-space:nowrap}
+.mx tr{cursor:pointer}.mx tr:hover td{background:#0f2438}.mx tr.sel td{background:#13304a}
+.mx td.c{text-align:center}
+.mx .yes{color:#ffd9a0;font-weight:600}.mx .ctx{color:var(--mute)}.mx .no{color:#33506b}
+.mxwrap{max-height:520px;overflow:auto}
+@media (max-width:760px){.mxwrap{overflow-x:auto}}
 @media (prefers-reduced-motion:reduce){#map .pulse,#map .flow,#map .burst{animation:none}#map path.c{transition:none}}
 </style>
+</head>
+<body>
 
 <div class="wrap">
 <header>
@@ -89,6 +127,7 @@ button.primary{background:var(--teal);color:#04201c;border-color:var(--teal);fon
   <div class="week"><span>week of</span><b id="wk">—</b></div>
 </header>
 <div class="chips" id="counts"></div>
+<div class="fresh" id="fresh" role="status"></div>
 
 <div class="grid">
   <div class="card mapcard">
@@ -119,11 +158,20 @@ button.primary{background:var(--teal);color:#04201c;border-color:var(--teal);fon
 </div>
 
 <div class="card">
+  <div class="row" style="justify-content:space-between"><h3 style="margin:0;font-family:var(--display);font-size:18px">Which signals fired, country by country · <span id="mxwk"></span></h3>
+  <label class="note"><input type="checkbox" id="mxall"> show quiet countries</label></div>
+  <p class="note" style="margin:4px 0 10px">One row per monitored country for the selected week. Amber = signal fired. Dashed = context only (not a trigger). Click a row to open its brief.</p>
+  <div class="mxwrap"><table class="mx" id="matrix"></table></div>
+</div>
+
+<div class="card">
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-t="rel" id="t-rel">How reliable is it?</button>
     <button role="tab" aria-selected="false" data-t="how" id="t-how">How it works</button>
     <button role="tab" aria-selected="false" data-t="safe" id="t-safe">Safeguards and limits</button>
+    <button role="tab" aria-selected="false" data-t="log" id="t-log">Decision log</button>
   </div>
+  <div id="p-log" hidden></div>
   <div id="p-rel"></div>
   <div id="p-how" hidden>
     <div class="cols">
@@ -184,6 +232,51 @@ gL.selectAll("text").data(D.monitored).join("text").attr("class","lbl")
 function curve(a, b){ const mx=(a[0]+b[0])/2, my=(a[1]+b[1])/2, dx=b[0]-a[0], dy=b[1]-a[1]; return `M${a[0]},${a[1]} Q${mx-dy*.25},${my+dx*.25} ${b[0]},${b[1]}`; }
 const fmt = s => d3.timeFormat("%d %b %Y")(new Date(s));
 const daysBetween = (a,b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtS = s => d3.timeFormat("%d %b")(new Date(s));
+const ALERT = l => l === "watch" || l === "warning";
+
+/* ── Confidence: how often alerts built on the same signals were followed by an outbreak in the 2023–2026 back-test ── */
+const RULE = name => D.metrics.find(m => m.rule === name) || D.metrics.find(m => m.rule.startsWith(name));
+function confidence(i, iso){
+  const r = W[i].c[iso]; if (!r || !ALERT(r.l)) return null;
+  const s = r.s, cand = [];
+  if (s.nb.length >= 2) cand.push([RULE("ALERTE (2 voisins)"), "two neighbours surging"]);
+  else if (s.nb.length === 1) cand.push([RULE("VIGILANCE seule (1 voisin)"), "one neighbour surging"]);
+  if (s.dr) cand.push([RULE("sécheresse active seul"), "active drought"]);
+  if (s.cf) cand.push([RULE("pic de conflits (z>=1) seul"), "conflict spike"]);
+  if (s.en) cand.push([RULE("El Niño, Afrique de l'Est seulement"), "El Niño (East Africa)"]);
+  const k = (s.nb.length ? 1 : 0) + s.dr + s.cf + s.en;
+  if (k >= 2) cand.push([RULE("Score >= 2 signaux"), "two or more independent signals"]);
+  const ok = cand.filter(c => c[0] && c[0].ppv != null);
+  if (!ok.length) return null;
+  ok.sort((a, b) => b[0].ppv - a[0].ppv);
+  const [m, why] = ok[0], base = m.base_rate || .2, ratio = m.ppv / base;
+  let level = ratio >= 2 ? 3 : ratio >= 1.3 ? 2 : 1;
+  const ds = dataStatus(i, iso); let penalty = "";
+  if (ds.missing4 >= 2) { level = Math.max(1, level - 1); penalty = `Lowered one step: ${ds.missing4} of the last 4 weeks were not reported for this country.`; }
+  return {level, label: ["", "Low", "Moderate", "High"][level], why, ppv: m.ppv, base, hits: m.hits, onsets: m.onsets, sens: m.sensitivity, lead: m.median_lead_days, episodes: m.alert_episodes, penalty};
+}
+
+/* ── Data quality: WHO publishes a row only for the weeks a country reported; no row = not reported, not zero ── */
+function dataStatus(i, iso){
+  const inWho = !!D.last_report[iso];
+  let missing4 = 0, missing8 = 0, last = null;
+  for (let j = i; j >= 0 && j > i - 8; j--) { const r = W[j].c[iso]; if (r && r.m) { missing8++; if (j > i - 4) missing4++; } }
+  for (let j = i; j >= 0; j--) { const r = W[j].c[iso]; if (r && !r.m && inWho) { last = W[j].w; break; } }
+  return {inWho, missing4, missing8, last, gap: last ? daysBetween(last, W[i].w) : null};
+}
+
+/* ── Officer decisions (kept in this browser for the demo; a ministry deployment writes them to its alert register) ── */
+const DKEY = "ns_decisions_v1";
+const loadDec = () => { try { return JSON.parse(localStorage.getItem(DKEY) || "{}"); } catch (e) { return {}; } };
+const saveDec = o => { try { localStorage.setItem(DKEY, JSON.stringify(o)); } catch (e) {} };
+const officer = () => { try { return localStorage.getItem("ns_officer") || ""; } catch (e) { return ""; } };
+function decisionsFor(iso, w){ return loadDec()[iso + "|" + w] || []; }
+function lastStatus(iso, w){ const h = decisionsFor(iso, w).filter(d => d.status !== "comment"); return h.length ? h[h.length - 1].status : ""; }
+function addDecision(iso, w, status, note, by){
+  const o = loadDec(), k = iso + "|" + w; (o[k] = o[k] || []).push({status, note: note || "", by: by || "officer", at: new Date().toISOString()}); saveDec(o);
+}
 
 function counts(i){ const c = {warning:0, watch:0, active:0}; for (const k of D.monitored){ const l = W[i].c[k] && W[i].c[k].l; if (c[l] !== undefined) c[l]++; } return c; }
 
@@ -212,7 +305,52 @@ function render(anim = true){
     const ons = D.monitored.filter(k => (D.onsets[k] || []).includes(wk.w) && cent[k]);
     ons.forEach(k => gP.append("circle").attr("class","burst").attr("cx", cent[k][0]).attr("cy", cent[k][1]).on("animationend", function(){ this.remove(); }));
   }
-  brief();
+  brief(); fresh(); matrix();
+}
+
+function fresh(){
+  const latest = W[N-1].w, today = new Date().toISOString().slice(0, 10), age = daysBetween(latest, today);
+  const src = (D.sources || []).map(s => `${esc(s.name)} to <b>${s.last.length > 7 ? fmtS(s.last) + " " + s.last.slice(0,4) : d3.timeFormat("%b %Y")(new Date(s.last + "-01"))}</b>`).join(" · ");
+  const live = wi === N - 1;
+  const el = d3.select("#fresh").classed("late", live && age > 21);
+  el.html(live
+    ? `<span class="${age > 21 ? "flag" : ""}">Live view: latest WHO cholera data is the week of ${fmt(latest)}, ${age} days before today. WHO publishes weekly counts with a 2–4 week delay, so this week's alerts are provisional.</span><span>Data available: ${src}</span>`
+    : `<span>Replay of a past week (${fmt(W[wi].w)}): alerts are computed only from data that existed that week. <button id="golive" style="padding:3px 9px">Go to the live week</button></span><span>Data available: ${src}</span>`);
+  d3.select("#golive").on("click", () => { stop(); go(N-1); });
+}
+
+const LORD = {warning:0, watch:1, active:2, none:3};
+function matrix(){
+  const wk = W[wi], all = d3.select("#mxall").property("checked");
+  d3.select("#mxwk").text("week of " + fmt(wk.w));
+  const rows = D.monitored.filter(k => wk.c[k] && (all || (wk.c[k].l && wk.c[k].l !== "none"))).sort((a, b) => (LORD[wk.c[a].l||"none"] - LORD[wk.c[b].l||"none"]) || (NM[a]||a).localeCompare(NM[b]||b));
+  const cell = (on, ctx) => on ? `<td class="c ${ctx ? "ctx" : "yes"}">${ctx ? "context" : "yes"}</td>` : `<td class="c no">·</td>`;
+  let h = `<thead><tr><th>Country</th><th>Level</th><th>Neighbour surging</th><th>Drought</th><th>Conflict spike</th><th>El Niño (E. Africa)</th><th>Flood</th><th>Confidence</th><th>Data</th><th>Officer</th></tr></thead><tbody>`;
+  for (const k of rows){
+    const r = wk.c[k], s = r.s || {nb:[]}, l = r.l || "none", c = confidence(wi, k), ds = dataStatus(wi, k), st = lastStatus(k, wk.w);
+    const nb = s.nb && s.nb.length ? `<td class="yes">${s.nb.map(n => esc(NM[n] || n)).join(", ")}</td>` : `<td class="c no">·</td>`;
+    const data = !ds.inWho ? `<span class="ctx">no WHO series</span>` : ds.missing4 ? `<span class="yes">${ds.missing4}/4 wks missing</span>` : `<span class="ctx">reported</span>`;
+    h += `<tr data-iso="${k}" class="${k === sel ? "sel" : ""}"><td>${esc(NM[k] || k)}</td><td><span class="pill" style="background:${LVC[l]};font-size:10.5px">${LVN[l]}</span></td>${nb}${cell(s.dr)}${cell(s.cf)}${cell(s.en)}${cell(s.fl, true)}<td>${c ? c.label + ` <span class="ctx">(${Math.round(c.ppv*100)}%)</span>` : `<span class="ctx">–</span>`}</td><td>${data}</td><td>${st ? (st === "accepted" ? "✔ accepted" : "✖ dismissed") : (ALERT(l) ? `<span class="yes">to review</span>` : "")}</td></tr>`;
+  }
+  if (!rows.length) h += `<tr><td colspan="10" class="ctx">No country on alert this week. Tick “show quiet countries” to see all 26.</td></tr>`;
+  d3.select("#matrix").html(h + "</tbody>");
+  d3.selectAll("#matrix tbody tr[data-iso]").on("click", function(){ sel = this.dataset.iso; render(false); document.getElementById("brief").scrollIntoView({behavior: "smooth", block: "nearest"}); });
+}
+
+function decisionLog(){
+  const o = loadDec(), items = [];
+  for (const k in o) { const [iso, w] = k.split("|"); for (const d of o[k]) items.push({iso, w, ...d}); }
+  items.sort((a, b) => b.at.localeCompare(a.at));
+  let h = `<p class="note">Every accept, dismiss and comment, newest first. Kept in this browser for the demo; in a ministry deployment the same records go to its alert register and audit trail.</p>`;
+  if (!items.length) h += `<p class="note">No decision recorded yet. Open a country on WATCH or WARNING and accept, dismiss or comment on its alert.</p>`;
+  else h += `<div class="row" style="margin-bottom:8px"><button id="logcsv">Download as CSV</button><button id="logclear">Clear log</button></div><table class="ev"><thead><tr><th>When</th><th>Country</th><th>Alert week</th><th>Decision</th><th>By</th><th>Note</th></tr></thead><tbody>` +
+    items.map(d => `<tr><td>${esc(d.at.slice(0,16).replace("T"," "))}</td><td>${esc(NM[d.iso] || d.iso)}</td><td>${esc(fmt(d.w))}</td><td>${esc(d.status)}</td><td>${esc(d.by)}</td><td>${esc(d.note)}</td></tr>`).join("") + `</tbody></table>`;
+  d3.select("#p-log").html(h);
+  d3.select("#logcsv").on("click", () => {
+    const csv = "when,country,alert_week,decision,by,note\n" + items.map(d => [d.at, NM[d.iso] || d.iso, d.w, d.status, d.by, d.note].map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: "text/csv"})); a.download = "nova_sentinel_decisions.csv"; a.click();
+  });
+  d3.select("#logclear").on("click", () => { saveDec({}); decisionLog(); render(false); });
 }
 
 function brief(){
@@ -244,16 +382,58 @@ function brief(){
   else if (daysBetween(wk.w, W[N-1].w) >= 70) { next = "<b>What happened next:</b> no new outbreak in the following 10 weeks."; cls = "ok"; }
   else { next = "<b>What happens next:</b> too recent to know. This is a live alert."; }
   const pill = `<span class="pill" style="background:${LVC[l]}">${LVN[l]}</span>`;
+  // plain-language rule + evidence + confidence + data quality + officer decision
+  const nbList = s.nb || [];
+  const k = (nbList.length ? 1 : 0) + s.dr + s.cf + s.en;
+  let rule = "";
+  if (l === "warning") rule = nbList.length >= 2 && k < 2 ? "WARNING because two neighbouring countries are surging at the same time." : `WARNING because ${k} independent signals fired in the same week (two or more are needed).`;
+  else if (l === "watch") rule = "WATCH because exactly one signal fired. One signal alone is a reason to check readiness, not to act.";
+  const ruleDef = "A neighbour is “surging” when its last 2 weeks hold at least 50 cases and three times its previous 6-week average. Drought = an active GDACS drought alert. Conflict spike = conflict events at least one standard deviation above the country's usual level. El Niño counts only for East Africa (ONI ≥ 0.5).";
+  const last4 = W.slice(Math.max(0, wi-3), wi+1);
+  let ev = "";
+  if (ALERT(l)) {
+    const rowsEv = [];
+    for (const n of nbList) rowsEv.push(`<tr><td>Neighbour surging</td><td>${esc(NM[n]||n)}</td>${last4.map(w => `<td class="n">${w.c[n] ? (w.c[n].m ? "n/r" : d3.format(",")(w.c[n].n)) : "–"}</td>`).join("")}<td>WHO</td></tr>`);
+    if (s.dr) rowsEv.push(`<tr><td>Active drought</td><td>${esc(nm)}</td><td colspan="4">GDACS drought alert covering this week</td><td>GDACS</td></tr>`);
+    if (s.cf) rowsEv.push(`<tr><td>Conflict spike</td><td>${esc(nm)}</td><td colspan="4">conflict events ≥ 1 standard deviation above normal (last month)</td><td>HDX</td></tr>`);
+    if (s.en) rowsEv.push(`<tr><td>El Niño</td><td>East Africa</td><td colspan="4">ONI ${wk.oni >= 0 ? "+" : ""}${wk.oni.toFixed(2)} (previous month)</td><td>NOAA</td></tr>`);
+    rowsEv.push(`<tr><td>Own cases</td><td>${esc(nm)}</td>${last4.map(w => `<td class="n">${w.c[sel] ? (w.c[sel].m ? "n/r" : d3.format(",")(w.c[sel].n)) : "–"}</td>`).join("")}<td>WHO</td></tr>`);
+    ev = `<div class="sec"><h3>Evidence · weekly cases, last 4 weeks</h3><table class="ev"><thead><tr><th>Signal</th><th>Where</th>${last4.map(w => `<th style="text-align:right">${fmtS(w.w)}</th>`).join("")}<th>Source</th></tr></thead><tbody>${rowsEv.join("")}</tbody></table><div class="note" style="margin-top:4px">n/r = not reported that week (missing, not zero).</div></div>`;
+  }
+  const cf = confidence(wi, sel);
+  const confHtml = cf ? `<div class="sec"><h3>How confident is this alert?</h3><div class="conf"><span class="meter">${[1,2,3].map(x => `<i class="${x <= cf.level ? "on" : ""}"></i>`).join("")}</span><b>${cf.label}</b></div>
+    <div style="margin-top:4px">Alerts built on <b>${cf.why}</b> were followed by an outbreak within 10 weeks <b>${Math.round(cf.ppv*100)}%</b> of the time in the 2023–2026 back-test (chance level ${Math.round(cf.base*100)}%). This signal caught ${cf.hits} of ${cf.onsets} outbreaks${cf.lead ? `, a median of ${cf.lead} days ahead` : ""}.</div>${cf.penalty ? `<div class="note" style="margin-top:4px">${cf.penalty}</div>` : ""}</div>` : "";
+  const ds = dataStatus(wi, sel);
+  let dq = "";
+  if (MON.has(sel)) {
+    if (!ds.inWho) dq = `<div class="dq">No WHO weekly series for this country: only its neighbours and climate or crisis signals can raise an alert. Treat “quiet” as “unknown”.</div>`;
+    else if (ds.missing4 || (ds.gap != null && ds.gap > 21)) dq = `<div class="dq">Data delayed: ${ds.missing8} of the last 8 weeks were not reported to WHO${ds.last ? `; last report: week of ${fmt(ds.last)}` : ""}. Zero cases may mean no report, not no cholera.</div>`;
+    else dq = `<div class="dq ok">Reporting is up to date for this country (last report: week of ${fmt(ds.last)}).</div>`;
+  }
+  const hist = decisionsFor(sel, wk.w), st = lastStatus(sel, wk.w);
+  const decide = ALERT(l) ? `<div class="sec"><h3>Officer decision</h3><div class="decide">
+      <div class="btns"><button class="acc" id="dAcc" aria-pressed="${st === "accepted"}">✔ Accept alert</button><button class="dis" id="dDis" aria-pressed="${st === "dismissed"}">✖ Dismiss</button></div>
+      <input id="dBy" placeholder="Your name or role (e.g. Surveillance officer, MoH)" value="${esc(officer())}" aria-label="Officer name or role">
+      <textarea id="dNote" placeholder="Comment: what you checked, what you decided, who you informed" aria-label="Comment"></textarea>
+      <div class="btns"><button id="dCom">Add comment</button><span class="note">Kept in this browser for the demo; see the Decision log tab.</span></div>
+      ${hist.length ? `<div class="hist">${hist.slice().reverse().map(d => `<span>${esc(d.at.slice(0,16).replace("T"," "))} · <b>${esc(d.status)}</b> by ${esc(d.by)}${d.note ? " — " + esc(d.note) : ""}</span>`).join("")}</div>` : ""}
+    </div></div>` : "";
   d3.select("#brief").html(`
     <div class="row">${pill}<span class="note">${fmt(wk.w)}</span></div>
     <h2 style="margin-top:8px">${nm}</h2>
     <div class="sec"><h3>Signals this week</h3><div class="sig">${chips.join("")}</div></div>
-    <div class="sec"><h3>Why</h3><div>${why}</div></div>
+    <div class="sec"><h3>Why it fired, in plain words</h3><div>${why}</div>${rule ? `<div style="margin-top:6px">${rule}</div><details style="margin-top:4px"><summary class="note">How the signals are defined</summary><div class="note">${ruleDef}</div></details>` : ""}</div>
+    ${confHtml}${ev}${dq ? `<div class="sec"><h3>Data quality</h3>${dq}</div>` : ""}${decide}
     ${MON.has(sel) ? `<div class="sec"><h3>Proportionate action</h3><div>${ACT[l]}</div></div>
     <div class="sec"><h3>Who acts</h3><div>National epidemiological surveillance (ministry of health), with the WASH cluster. A mandated officer decides.</div></div>` : ""}
     <div class="sec"><div class="next ${cls}">${next}</div></div>
     <div class="sec"><h3>Weekly cholera cases, ${nm} · shaded weeks were on alert</h3><svg id="spark" viewBox="0 0 600 110" preserveAspectRatio="none"></svg></div>`);
   spark();
+  const by = () => { const v = (document.getElementById("dBy") || {}).value || ""; try { localStorage.setItem("ns_officer", v); } catch (e) {} return v.trim() || "officer"; };
+  const note = () => ((document.getElementById("dNote") || {}).value || "").trim();
+  d3.select("#dAcc").on("click", () => { addDecision(sel, wk.w, "accepted", note(), by()); render(false); decisionLog(); });
+  d3.select("#dDis").on("click", () => { addDecision(sel, wk.w, "dismissed", note(), by()); render(false); decisionLog(); });
+  d3.select("#dCom").on("click", () => { const n = note(); if (!n) { document.getElementById("dNote").focus(); return; } addDecision(sel, wk.w, "comment", n, by()); render(false); decisionLog(); });
 }
 
 function spark(){
@@ -315,8 +495,14 @@ d3.select("#today").on("click", () => { stop(); go(N-1); });
 d3.select("#speed").on("change", () => { if (timer) { stop(); play(); } });
 d3.select("#storyChad").on("click", () => story("TCD", "2026-04-06", "2026-06-08"));
 d3.select("#storyKen").on("click", () => story("KEN", "2024-11-25", "2025-02-10"));
-d3.selectAll(".tabs button").on("click", function(){ d3.selectAll(".tabs button").attr("aria-selected", "false"); this.setAttribute("aria-selected", "true"); for (const t of ["rel","how","safe"]) document.getElementById("p-"+t).hidden = t !== this.dataset.t; });
-document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return; if (e.code === "Space") { e.preventDefault(); play(); } if (e.key === "ArrowLeft") { stop(); go(wi-1); } if (e.key === "ArrowRight") { stop(); go(wi+1); } });
+d3.selectAll(".tabs button").on("click", function(){ d3.selectAll(".tabs button").attr("aria-selected", "false"); this.setAttribute("aria-selected", "true"); for (const t of ["rel","how","safe","log"]) document.getElementById("p-"+t).hidden = t !== this.dataset.t; if (this.dataset.t === "log") decisionLog(); });
+document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "TEXTAREA" || e.target.tagName === "BUTTON") return; if (e.code === "Space") { e.preventDefault(); play(); } if (e.key === "ArrowLeft") { stop(); go(wi-1); } if (e.key === "ArrowRight") { stop(); go(wi+1); } });
 d3.select("#gen").text(D.generated);
+d3.select("#mxall").on("change", matrix);
+// open on a live alert: the latest week's WARNING with the highest confidence (else any WATCH)
+{ const live = D.monitored.filter(k => W[N-1].c[k] && ALERT(W[N-1].c[k].l)).map(k => [k, W[N-1].c[k].l === "warning" ? 1 : 0, (confidence(N-1, k) || {ppv: 0}).ppv]).sort((a, b) => b[1] - a[1] || b[2] - a[2]);
+  const h = (location.hash || "").slice(1).toUpperCase(); sel = MON.has(h) ? h : (live.length ? live[0][0] : "TCD"); }
 strip(); reliability(); render(false); moveCur();
 </script>
+</body>
+</html>

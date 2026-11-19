@@ -10,6 +10,10 @@ countries = sorted(set(NB) | {n for v in NB.values() for n in v} & set(p.columns
 dr = {c: active_drought(c) for c in NB}; cs = {c: conflict_spike(c) for c in NB}
 fl = {c: recent_event(c, ["FL"], ["Green", "Orange", "Red"]) for c in NB}
 onsets = {c: [str(t.date()) for t in W[(p[c] > 0) & quiet[c]]] for c in NB if c in p}
+# 19/11 : data-quality flags — WHO publishes a row only for the weeks a country reported; no row = not reported (not zero).
+_raw = pd.read_csv("data/who_week_all.csv", parse_dates=["date_wk"])
+reported = {c: set(g.date_wk.dt.to_period("W-SUN").dt.start_time) for c, g in _raw.groupby("iso_3_code")}
+last_report = {c: str(max(v).date()) for c, v in reported.items()}
 weekly = []
 for w in weeks:
     win = W[(W > w - pd.Timedelta(days=28)) & (W <= w)]
@@ -25,9 +29,18 @@ for w in weeks:
             active = (not quiet[c].loc[win].any()) and p[c].loc[win].sum() > 0
             rec["l"] = "active" if active else ("warning" if k >= 2 or len(hot) >= 2 else ("watch" if k == 1 else "none"))
             rec["s"] = sig
+            if w not in reported.get(c, set()): rec["m"] = 1
         row[c] = rec
     weekly.append({"w": str(w.date()), "oni": round(float(oni.shift(1).reindex([w], method="ffill").iloc[0]), 2), "c": row})
+_g = pd.read_csv("data/gdacs_events.csv"); _cf = pd.read_csv("data/conflict_national.csv").dropna(subset=["month"]); _o = pd.read_csv("data/oni.csv")
+sources = [
+    {"name": "WHO weekly cholera cases", "last": str(_raw.date_wk.max().date()), "cadence": "weekly, published with a 2–4 week delay"},
+    {"name": "GDACS droughts and floods", "last": str(pd.to_datetime(_g["from"]).max().date()), "cadence": "event alerts"},
+    {"name": "HDX conflict events (ACLED aggregates)", "last": str(_cf["month"].max())[:7], "cadence": "monthly"},
+    {"name": "NOAA El Niño index (ONI)", "last": str(_o["month"].max())[:7], "cadence": "monthly"},
+]
 out = {"countries": {c: names.get(c, c) for c in countries}, "monitored": list(NB), "neighbours": NB, "onsets": onsets,
+       "sources": sources, "last_report": last_report,
        "weeks": weekly, "metrics": res, "generated": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M")}
 json.dump(out, open("out/app_data.json", "w"), separators=(",", ":"))
 print(len(weekly), "weeks", len(countries), "countries", round(len(json.dumps(out)) / 1e6, 2), "MB; last levels:",
